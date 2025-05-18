@@ -121,20 +121,13 @@
     <h1>Cyberpunk: Breach Protocol</h1>
 
     <div id="controls">
-      <label
-        for="difficulty"
-        data-en="Difficulty level:"
-        data-pl="Poziom trudności:"
-        >Poziom trudności:</label
-      >
+      <label for="difficulty" data-en="Difficulty level:" data-pl="Poziom trudności:">Poziom trudności:</label>
       <select id="difficulty">
         <option value="4" data-en="Easy" data-pl="Łatwy">Łatwy</option>
         <option value="5" data-en="Medium" data-pl="Średni">Średni</option>
         <option value="6" data-en="Hard" data-pl="Trudny">Trudny</option>
       </select>
-      <button onclick="startGame()" data-en="Start" data-pl="Start">
-        Start
-      </button>
+      <button onclick="startGame()" data-en="Start" data-pl="Start">Start</button>
     </div>
 
     <div id="message"></div>
@@ -337,17 +330,14 @@
 
       function switchLanguage(selectedLang) {
         lang = selectedLang;
-        document.querySelectorAll("[data-en]").forEach((el) => {
-          if (el.id !== "time") {
+        document.querySelectorAll('[data-en]').forEach(el => {
+          if (el.id !== 'time') {
             el.textContent = el.getAttribute(`data-${lang}`);
           }
         });
-        document.title =
-          lang === "pl"
-            ? "Cyberpunk Breach Protocol"
-            : "Cyberpunk Breach Protocol";
-        const difficulty = document.getElementById("difficulty");
-        difficulty.querySelectorAll("option").forEach((opt) => {
+        document.title = lang === 'pl' ? 'Cyberpunk Breach Protocol' : 'Cyberpunk Breach Protocol';
+        const difficulty = document.getElementById('difficulty');
+        difficulty.querySelectorAll('option').forEach(opt => {
           opt.textContent = opt.getAttribute(`data-${lang}`);
         });
       }
