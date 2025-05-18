@@ -1,334 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cyberpunk Breach Protocol</title>
-  <style>
-    body {
-      margin: 0;
-      background: #0e0a1a;
-      color: #d0ff65;
-      font-family: 'Courier New', Courier, monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 20px;
-      height: 100vh;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-      font-size: 28px;
-      color: #d0ff65;
-    }
-
-    #controls {
-      margin-bottom: 10px;
-    }
-
-    #controls label,
-    #controls select,
-    #controls button {
-      font-size: 16px;
-      color: #d0ff65;
-      background-color: transparent;
-      border: 1px solid #d0ff65;
-      padding: 5px 10px;
-      margin-right: 10px;
-    }
-
-    #message {
-      margin: 10px 0;
-      font-size: 18px;
-      height: 24px;
-    }
-
-    #timer {
-      margin-bottom: 10px;
-      font-size: 20px;
-    }
-
-    #matrix {
-      display: grid;
-      grid-template-columns: repeat(6, 60px);
-      gap: 4px;
-      margin-bottom: 20px;
-      background: #05030a;
-      padding: 10px;
-      box-shadow: 0 0 8px #d0ff65;
-      border: 1px solid #d0ff65;
-    }
-
-    .cell {
-      width: 60px;
-      height: 60px;
-      background: #1a1a1a;
-      border: 1px solid #d0ff65;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.2s;
-    }
-
-    .cell:hover {
-      background: #2a2a2a;
-    }
-
-    .selected {
-      background: #d0ff65;
-      color: black;
-    }
-
-    #buffer {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    #buffer span {
-      padding: 10px;
-      border: 1px solid #d0ff65;
-      min-width: 50px;
-      text-align: center;
-      background: #1a1a1a;
-    }
-
-    #sequence {
-      margin-top: 10px;
-    }
-
-    #language-switcher {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-    }
-
-    #language-switcher button {
-      font-size: 14px;
-      margin-left: 5px;
-      padding: 4px 8px;
-      background-color: transparent;
-      border: 1px solid #d0ff65;
-      color: #d0ff65;
-    }
-  </style>
-</head>
-<body>
-  <h1>Cyberpunk: Breach Protocol</h1>
-
-  <div id="controls">
-    <label for="difficulty" data-en="Difficulty level:" data-pl="Poziom trudności:">Poziom trudności:</label>
-    <select id="difficulty">
-      <option value="4" data-en="Easy" data-pl="Łatwy">Łatwy</option>
-      <option value="5" data-en="Medium" data-pl="Średni">Średni</option>
-      <option value="6" data-en="Hard" data-pl="Trudny">Trudny</option>
-    </select>
-    <button onclick="startGame()" data-en="Start" data-pl="Start">Start</button>
-  </div>
-
-  <div id="message"></div>
-  <div id="timer" data-en="Time:" data-pl="Czas:">Czas: <span id="time">0</span>s</div>
-  <div id="matrix"></div>
-  <div id="buffer"></div>
-  <div id="sequence"><span data-en="Demon:" data-pl="Demon:">Demon:</span> <span id="target"></span></div>
-
-  <div id="language-switcher">
-    <button onclick="switchLanguage('pl')">PL</button>
-    <button onclick="switchLanguage('en')">EN</button>
-  </div>
-
-  <script>
-    const hexValues = ['1C', '55', 'BD', '7A', 'E9', 'FF'];
-    const rows = 6;
-    const cols = 6;
-
-    let matrix = [];
-    let buffer = [];
-    let targetSequence = [];
-    let sequenceLength = 4;
-    let bufferLimit = 4;
-    let started = false;
-    let mode = 'row';
-    let lastCoord = null;
-    let timer = null;
-    let timeLeft = 60;
-
-    const matrixEl = document.getElementById('matrix');
-    const bufferEl = document.getElementById('buffer');
-    const targetEl = document.getElementById('target');
-    const timeEl = document.getElementById('time');
-    const messageEl = document.getElementById('message');
-
-    function generateMatrix() {
-      matrix = [];
-      for (let r = 0; r < rows; r++) {
-        const row = [];
-        for (let c = 0; c < cols; c++) {
-          row.push(hexValues[Math.floor(Math.random() * hexValues.length)]);
-        }
-        matrix.push(row);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cyberpunk Breach Protocol</title>
+    <style>
+      body {
+        margin: 0;
+        background: #0e0a1a;
+        color: #d0ff65;
+        font-family: "Courier New", Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        height: 100vh;
       }
-    }
 
-    function renderMatrix() {
-      matrixEl.innerHTML = '';
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const cell = document.createElement('div');
-          cell.className = 'cell';
-          cell.textContent = matrix[r][c];
-          cell.dataset.row = r;
-          cell.dataset.col = c;
-          cell.addEventListener('click', () => selectCell(r, c, cell));
-          matrixEl.appendChild(cell);
+      h1 {
+        margin-bottom: 10px;
+        font-size: 28px;
+        color: #d0ff65;
+      }
+
+      #controls {
+        margin-bottom: 10px;
+      }
+
+      #controls label,
+      #controls select,
+      #controls button {
+        font-size: 16px;
+        color: #d0ff65;
+        background-color: transparent;
+        border: 1px solid #d0ff65;
+        padding: 5px 10px;
+        margin-right: 10px;
+      }
+
+      #message {
+        margin: 10px 0;
+        font-size: 18px;
+        height: 24px;
+      }
+
+      #timer {
+        margin-bottom: 10px;
+        font-size: 20px;
+      }
+
+      #matrix {
+        display: grid;
+        grid-template-columns: repeat(6, 60px);
+        gap: 4px;
+        margin-bottom: 20px;
+        background: #05030a;
+        padding: 10px;
+        box-shadow: 0 0 8px #d0ff65;
+        border: 1px solid #d0ff65;
+      }
+
+      .cell {
+        width: 60px;
+        height: 60px;
+        background: #1a1a1a;
+        border: 1px solid #d0ff65;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.2s;
+      }
+
+      .cell:hover {
+        background: #2a2a2a;
+      }
+
+      .selected {
+        background: #d0ff65;
+        color: black;
+      }
+
+      #buffer {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      #buffer span {
+        padding: 10px;
+        border: 1px solid #d0ff65;
+        min-width: 50px;
+        text-align: center;
+        background: #1a1a1a;
+      }
+
+      #sequence {
+        margin-top: 10px;
+      }
+
+      #language-switcher {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+      }
+
+      #language-switcher button {
+        font-size: 14px;
+        margin-left: 5px;
+        padding: 4px 8px;
+        background-color: transparent;
+        border: 1px solid #d0ff65;
+        color: #d0ff65;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cyberpunk: Breach Protocol</h1>
+
+    <div id="controls">
+      <label
+        for="difficulty"
+        data-en="Difficulty level:"
+        data-pl="Poziom trudności:"
+        >Poziom trudności:</label
+      >
+      <select id="difficulty">
+        <option value="4" data-en="Easy" data-pl="Łatwy">Łatwy</option>
+        <option value="5" data-en="Medium" data-pl="Średni">Średni</option>
+        <option value="6" data-en="Hard" data-pl="Trudny">Trudny</option>
+      </select>
+      <button onclick="startGame()" data-en="Start" data-pl="Start">
+        Start
+      </button>
+    </div>
+
+    <div id="message"></div>
+    <div id="timer">
+      <span id="time-label" data-en="Time:" data-pl="Czas:">Czas:</span>
+      <span id="time">0</span>s
+    </div>
+    <div id="matrix"></div>
+    <div id="buffer"></div>
+    <div id="sequence">
+      <span data-en="Demon:" data-pl="Demon:">Demon:</span>
+      <span id="target"></span>
+    </div>
+
+    <div id="language-switcher">
+      <button onclick="switchLanguage('pl')">PL</button>
+      <button onclick="switchLanguage('en')">EN</button>
+    </div>
+
+    <script>
+      const hexValues = ["1C", "55", "BD", "7A", "E9", "FF"];
+      const rows = 6;
+      const cols = 6;
+
+      let matrix = [];
+      let buffer = [];
+      let targetSequence = [];
+      let sequenceLength = 4;
+      let bufferLimit = 4;
+      let started = false;
+      let mode = "row";
+      let lastCoord = null;
+      let timer = null;
+      let timeLeft = 60;
+
+      const matrixEl = document.getElementById("matrix");
+      const bufferEl = document.getElementById("buffer");
+      const targetEl = document.getElementById("target");
+      const timeEl = document.getElementById("time");
+      const messageEl = document.getElementById("message");
+
+      function generateMatrix() {
+        matrix = [];
+        for (let r = 0; r < rows; r++) {
+          const row = [];
+          for (let c = 0; c < cols; c++) {
+            row.push(hexValues[Math.floor(Math.random() * hexValues.length)]);
+          }
+          matrix.push(row);
         }
       }
-    }
 
-    function generateSolvableSequence() {
-      const path = [];
-      let used = Array.from({ length: rows }, () => Array(cols).fill(false));
-      let r = 0;
-      let c = Math.floor(Math.random() * cols);
-      let currentMode = 'row';
-
-      path.push(matrix[r][c]);
-      used[r][c] = true;
-
-      for (let i = 1; i < sequenceLength; i++) {
-        if (currentMode === 'row') {
-          const possible = [];
-          for (let cc = 0; cc < cols; cc++) {
-            if (!used[r][cc]) possible.push(cc);
+      function renderMatrix() {
+        matrixEl.innerHTML = "";
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.textContent = matrix[r][c];
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+            cell.addEventListener("click", () => selectCell(r, c, cell));
+            matrixEl.appendChild(cell);
           }
-          if (possible.length === 0) break;
-          c = possible[Math.floor(Math.random() * possible.length)];
-        } else {
-          const possible = [];
-          for (let rr = 0; rr < rows; rr++) {
-            if (!used[rr][c]) possible.push(rr);
-          }
-          if (possible.length === 0) break;
-          r = possible[Math.floor(Math.random() * possible.length)];
         }
-        used[r][c] = true;
+      }
+
+      function generateSolvableSequence() {
+        const path = [];
+        let used = Array.from({ length: rows }, () => Array(cols).fill(false));
+        let r = 0;
+        let c = Math.floor(Math.random() * cols);
+        let currentMode = "row";
+
         path.push(matrix[r][c]);
-        currentMode = currentMode === 'row' ? 'col' : 'row';
-      }
+        used[r][c] = true;
 
-      return path;
-    }
-
-    function generateTargetSequence() {
-      targetSequence = generateSolvableSequence();
-      targetEl.textContent = targetSequence.join(' ');
-    }
-
-    function selectCell(row, col, cell) {
-      if (!started) {
-        if (row !== 0) return;
-        startTimer();
-        started = true;
-      }
-
-      if (buffer.length >= bufferLimit) return;
-
-      if (buffer.length > 0) {
-        if (mode === 'row' && row !== lastCoord.row) return;
-        if (mode === 'col' && col !== lastCoord.col) return;
-      }
-
-      if (cell.classList.contains('selected')) return;
-
-      buffer.push(matrix[row][col]);
-      lastCoord = { row, col };
-      cell.classList.add('selected');
-      updateBuffer();
-
-      mode = mode === 'row' ? 'col' : 'row';
-
-      if (buffer.length === bufferLimit) {
-        checkSequence();
-      }
-    }
-
-    function updateBuffer() {
-      bufferEl.innerHTML = '';
-      buffer.forEach(val => {
-        const span = document.createElement('span');
-        span.textContent = val;
-        bufferEl.appendChild(span);
-      });
-    }
-
-    function checkSequence() {
-      clearInterval(timer);
-      const match = buffer.slice(0, sequenceLength).join(' ') === targetSequence.join(' ');
-      if (match) {
-        messageEl.textContent = lang === 'pl' ? '✔️ Sekwencja poprawna!' : '✔️ Sequence correct!';
-        messageEl.style.color = '#d0ff65';
-        setTimeout(() => {
-          startGame();
-        }, 1500);
-      } else {
-        messageEl.textContent = lang === 'pl' ? '❌ Błędna sekwencja!' : '❌ Incorrect sequence!';
-        messageEl.style.color = 'red';
-      }
-    }
-
-    function startTimer() {
-      timeEl.textContent = timeLeft;
-      timer = setInterval(() => {
-        timeLeft--;
-        timeEl.textContent = timeLeft;
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          messageEl.textContent = lang === 'pl' ? '⏱️ Czas minął!' : '⏱️ Time is up!';
-          messageEl.style.color = 'orange';
+        for (let i = 1; i < sequenceLength; i++) {
+          if (currentMode === "row") {
+            const possible = [];
+            for (let cc = 0; cc < cols; cc++) {
+              if (!used[r][cc]) possible.push(cc);
+            }
+            if (possible.length === 0) break;
+            c = possible[Math.floor(Math.random() * possible.length)];
+          } else {
+            const possible = [];
+            for (let rr = 0; rr < rows; rr++) {
+              if (!used[rr][c]) possible.push(rr);
+            }
+            if (possible.length === 0) break;
+            r = possible[Math.floor(Math.random() * possible.length)];
+          }
+          used[r][c] = true;
+          path.push(matrix[r][c]);
+          currentMode = currentMode === "row" ? "col" : "row";
         }
-      }, 1000);
-    }
 
-function startGame() {
-  clearInterval(timer);
-  const difficulty = document.getElementById('difficulty');
-  const selectedValue = parseInt(difficulty.value);
-  sequenceLength = selectedValue;
-  bufferLimit = sequenceLength;
-  if (selectedValue === 4) timeLeft = 55;
-  else if (selectedValue === 5) timeLeft = 40;
-  else timeLeft = 35;
-  buffer = [];
-  lastCoord = null;
-  mode = 'row';
-  started = true; // <- teraz gra się zaczęła od razu
-  messageEl.textContent = '';
-  generateMatrix();
-  renderMatrix();
-  generateTargetSequence();
-  updateBuffer();
-  timeEl.textContent = timeLeft;
-  startTimer(); // <- natychmiastowe uruchomienie timera
-}
+        return path;
+      }
 
+      function generateTargetSequence() {
+        targetSequence = generateSolvableSequence();
+        targetEl.textContent = targetSequence.join(" ");
+      }
 
-    let lang = 'pl';
+      function selectCell(row, col, cell) {
+        if (!started) {
+          if (row !== 0) return;
+          startTimer();
+          started = true;
+        }
 
-    function switchLanguage(selectedLang) {
-      lang = selectedLang;
-      document.querySelectorAll('[data-en]').forEach(el => {
-        el.textContent = el.getAttribute(`data-${lang}`);
-      });
-      document.querySelector('title').textContent = lang === 'pl' ? 'Cyberpunk Breach Protocol' : 'Cyberpunk Breach Protocol';
-      const difficulty = document.getElementById('difficulty');
-      difficulty.querySelectorAll('option').forEach(opt => {
-        opt.textContent = opt.getAttribute(`data-${lang}`);
-      });
-    }
-  </script>
-</body>
+        if (buffer.length >= bufferLimit) return;
+
+        if (buffer.length > 0) {
+          if (mode === "row" && row !== lastCoord.row) return;
+          if (mode === "col" && col !== lastCoord.col) return;
+        }
+
+        if (cell.classList.contains("selected")) return;
+
+        buffer.push(matrix[row][col]);
+        lastCoord = { row, col };
+        cell.classList.add("selected");
+        updateBuffer();
+
+        mode = mode === "row" ? "col" : "row";
+
+        if (buffer.length === bufferLimit) {
+          checkSequence();
+        }
+      }
+
+      function updateBuffer() {
+        bufferEl.innerHTML = "";
+        buffer.forEach((val) => {
+          const span = document.createElement("span");
+          span.textContent = val;
+          bufferEl.appendChild(span);
+        });
+      }
+
+      function checkSequence() {
+        clearInterval(timer);
+        const match =
+          buffer.slice(0, sequenceLength).join(" ") ===
+          targetSequence.join(" ");
+        if (match) {
+          messageEl.textContent =
+            lang === "pl" ? "✔️ Sekwencja poprawna!" : "✔️ Sequence correct!";
+          messageEl.style.color = "#d0ff65";
+          setTimeout(() => {
+            startGame();
+          }, 1500);
+        } else {
+          messageEl.textContent =
+            lang === "pl" ? "❌ Błędna sekwencja!" : "❌ Incorrect sequence!";
+          messageEl.style.color = "red";
+        }
+      }
+
+      function startTimer() {
+        timeEl.textContent = timeLeft;
+        timer = setInterval(() => {
+          timeLeft--;
+          timeEl.textContent = timeLeft;
+          if (timeLeft <= 0) {
+            clearInterval(timer);
+            messageEl.textContent =
+              lang === "pl" ? "⏱️ Czas minął!" : "⏱️ Time is up!";
+            messageEl.style.color = "orange";
+          }
+        }, 1000);
+      }
+
+      function startGame() {
+        clearInterval(timer);
+        const difficulty = document.getElementById("difficulty");
+        const selectedValue = parseInt(difficulty.value);
+        sequenceLength = selectedValue;
+        bufferLimit = sequenceLength;
+        if (selectedValue === 4) timeLeft = 55;
+        else if (selectedValue === 5) timeLeft = 40;
+        else timeLeft = 35;
+        buffer = [];
+        lastCoord = null;
+        mode = "row";
+        started = true;
+        messageEl.textContent = "";
+        generateMatrix();
+        renderMatrix();
+        generateTargetSequence();
+        updateBuffer();
+        timeEl.textContent = timeLeft;
+        startTimer();
+      }
+
+      let lang = "pl";
+
+      function switchLanguage(selectedLang) {
+        lang = selectedLang;
+        document.querySelectorAll("[data-en]").forEach((el) => {
+          if (el.id !== "time") {
+            el.textContent = el.getAttribute(`data-${lang}`);
+          }
+        });
+        document.title =
+          lang === "pl"
+            ? "Cyberpunk Breach Protocol"
+            : "Cyberpunk Breach Protocol";
+        const difficulty = document.getElementById("difficulty");
+        difficulty.querySelectorAll("option").forEach((opt) => {
+          opt.textContent = opt.getAttribute(`data-${lang}`);
+        });
+      }
+    </script>
+  </body>
 </html>
